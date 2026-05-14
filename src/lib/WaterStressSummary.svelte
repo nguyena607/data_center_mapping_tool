@@ -22,6 +22,7 @@
     { key: 'states', label: 'States' },
   ];
   const TOP_STATE_LIMIT = 15;
+  const baseUrl = import.meta.env.BASE_URL;
 
   let cardEl;
   let loading = $state(true);
@@ -44,7 +45,7 @@
 
   onMount(async () => {
     try {
-      const csvText = await fetch('/data_centers_with_derived_columns.csv').then((response) => response.text());
+      const csvText = await fetch(`${baseUrl}data_centers_with_derived_columns.csv`).then((response) => response.text());
       const rows = d3.csvParse(csvText);
       const matched = rows.filter((row) => SUPPORTED_LABELS.has(row.bws_label));
 
