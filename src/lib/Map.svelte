@@ -54,7 +54,6 @@
   let spatialLayer = null;
   let spatialBWSGeojson = null;
   let currentZoom = 1;
-  const baseUrl = import.meta.env.BASE_URL;
 
   let filteredData = $derived(
     allData.filter(d => {
@@ -92,9 +91,9 @@
 
   onMount(async () => {
     const [csvText, usAtlas, spatialGeojson] = await Promise.all([
-      fetch(`${baseUrl}data_centers.csv`).then(r => r.text()),
+      fetch('/data_centers.csv').then(r => r.text()),
       fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(r => r.json()),
-      fetch(`${baseUrl}wri_usa.geojson`).then(r => r.json()),
+      fetch('/wri_usa.geojson').then(r => r.json()),
     ]);
 
     buildMap(usAtlas, spatialGeojson);
