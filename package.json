@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "server": "node backend/server.js",
+    "derive:water-stress": "python3 scripts/add_water_stress_labels.py",
     "test": "echo \"No default tests. Run npm run test:chatbot for live chatbot tests.\"",
     "test:chatbot": "node --test tests/chatbot.test.js",
     "build": "vite build",
