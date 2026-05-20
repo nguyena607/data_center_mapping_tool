@@ -69,17 +69,13 @@ function validateDashboardFilter(filter) {
   if (Array.isArray(filter.activeStatuses)) {
     const activeStatuses = filter.activeStatuses
       .filter((status) => VALID_DASHBOARD_STATUSES.includes(status));
-    if (activeStatuses.length) {
-      nextFilter.activeStatuses = activeStatuses;
-    }
+    nextFilter.activeStatuses = activeStatuses;
   }
 
   if (Array.isArray(filter.activeBWSLabels)) {
     const activeBWSLabels = filter.activeBWSLabels
       .filter((label) => VALID_BWS_LABELS.includes(label));
-    if (activeBWSLabels.length) {
-      nextFilter.activeBWSLabels = activeBWSLabels;
-    }
+    nextFilter.activeBWSLabels = activeBWSLabels;
   }
 
   return Object.keys(nextFilter).length ? nextFilter : null;
@@ -189,6 +185,7 @@ async function summarizeResult({
   sql,
   rows,
   notes,
+  actionMessage,
   resultLimit,
   summaryThinkingLevel,
 }) {
@@ -199,6 +196,7 @@ async function summarizeResult({
     rows,
     notes,
     rowLimit: resultLimit,
+    actionMessage,
   });
 
   // console.log('Gemini summary prompt:', summaryPrompt);
@@ -291,6 +289,7 @@ export async function runChatbotTurn({
       sql: validSql,
       rows,
       notes,
+      actionMessage: action.message,
       resultLimit,
       summaryThinkingLevel,
     });

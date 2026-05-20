@@ -64,7 +64,7 @@
       onclick={closePanel}
     ></button>
 
-    <section class="panel" role="dialog" aria-label="Map guide and dataset information">
+    <div class="panel" role="dialog" aria-label="Map guide and dataset information">
       <div class="panel-header">
         <div>
           <h2>Map Guide</h2>
@@ -108,7 +108,7 @@
           </ul>
         </section>
       </div>
-    </section>
+    </div>
   {/if}
 </div>
 

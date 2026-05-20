@@ -186,10 +186,15 @@ SQL rules:
 - Use exact column names.
 - For counts, use COUNT(*) AS count.
 - Use case-insensitive matching for names and text, like LOWER(city) LIKE '%ashburn%'.
+- For company, organization, or entity names, search across relevant text fields, including facility_name, operator_name, tenant, purpose, and other_info, unless the user specifically names one column.
 - Blanks mean unknown or missing, not necessarily no.
 - Original CSV columns are stored as TEXT.
 - Numeric/date helper columns are derived from the original CSV values. Prefer these helper columns for numeric and date questions, but select the original text column too when showing reported values.
 - number_of_generators is not parsed because it mixes generator counts and power-capacity text.
+
+Ambiguous query rules:
+- If a user uses vague terms such as big, large, small, expensive, new, old, major, or biggest, map them to the most relevant available columns.
+- When returning SQL for an ambiguous term, set message to a short sentence explaining your interpretation, such as "I interpreted '[ambiguous term]' as [explanation]."
 
 Dashboard filter rules:
 - The dashboard is an interactive map.
@@ -199,17 +204,19 @@ Dashboard filter rules:
 - When returning both, make sure the SQL answers the same subset shown by the dashboard filter.
 - The filter object is a patch. Only include fields the user asked to change.
 - searchQuery is the text for the existing dashboard search box.
-- activeBWSLabels controls the separate water-stress polygon overlay, not the data center SQL table.
+- Include searchQuery whenever the map/dashboard request mentions a location, facility, operator, tenant, purpose, county, or other dashboard-searchable text.
+- The dashboard search box matches facility name, city, county, operator name, tenant, purpose, full state name, and state abbreviation.
 - For dashboard filters, use full state names like "California" instead of state abbreviations like "CA" when the user mentions a state.
 - For SQL, still use two-letter state abbreviations in the state column, such as state = 'CA'.
 - activeStatuses must use only these valid statuses: ${VALID_DASHBOARD_STATUSES.join(', ')}.
 - Omit activeStatuses if the user did not ask to change status filters.
+- To hide all data center status categories, return activeStatuses as an empty array.
+- activeBWSLabels controls the separate water-stress polygon overlay, not the data center SQL table.
 - activeBWSLabels must use only these valid water-stress labels: ${VALID_BWS_LABELS.join(', ')}.
 - Omit activeBWSLabels if the user did not ask to change water-stress overlay filters.
-- Use searchQuery only when the user asks to search/filter by location, facility, operator, tenant, purpose, or other text matched by the dashboard search box.
+- To hide all water-stress overlay categories, return activeBWSLabels as an empty array.
 - If the user asks to show or filter water-stress areas, return activeBWSLabels and keep sql null unless they also ask a data center question answerable from data_centers.
 - If the user asks for data center counts or analysis by water stress, return sql null and explain that water stress is a separate map overlay and is not part of the SQL data center table yet.
-- The dashboard search box matches facility name, city, county, operator name, tenant, purpose, full state name, and state abbreviation.
 - Search examples: state name "Illinois", state abbreviation "IL", city "Ashburn", county "Loudoun", operator "Microsoft", tenant "Google", purpose "AI", facility name "Google Data Center".
 
 ${STATE_GUIDE}
@@ -250,10 +257,11 @@ ${latestQuestion}
 `.trim();
 }
 
-export function buildSummaryPrompt({ conversation, userQuestion, sql, rows, notes, rowLimit }) {
+export function buildSummaryPrompt({ conversation, userQuestion, sql, rows, notes, rowLimit, actionMessage }) {
   const payload = {
     recentConversation: conversation,
     userQuestion,
+    actionMessage,
     sql,
     columns: Object.keys(rows[0] || {}),
     rows,
@@ -272,6 +280,7 @@ Do not invent facts outside the returned rows.
 If recent conversation conflicts with the SQL result, the SQL result wins.
 If the result is empty, say that no matching rows were returned.
 If notes mention missing values, include that limitation briefly when relevant.
+If actionMessage is present, mention it briefly before answering.
 If rowCountReturned equals rowLimit, mention that the displayed result is limited to ${rowLimit} rows when that affects the answer.
 Keep the answer concise and do not include the SQL query or Markdown tables.
 
